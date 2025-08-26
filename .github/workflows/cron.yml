@@ -1,0 +1,12 @@
+name: Tarea programada
+
+on:
+  schedule:
+    - cron: "0 3 * * *"  # todos los días a las 03:00 UTC
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Backup
+        run: echo "Ejecutando tarea programada diaria 🕒"
