@@ -1,0 +1,29 @@
+name: SelfHost-Docker
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Ambiente de despliegue'
+        required: true
+        default: 'staging'
+      version:
+        description: 'Versión de la app'
+        required: false
+
+jobs:
+  build:
+    runs-on: [self-hosted, Linux, X64, runner01]
+    container:
+      image: maven:3.6.3-openjdk-11-slim
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Mostrar parámetros
+        run: |
+          echo "Ambiente: ${{ github.event.inputs.environment }}"
+          echo "Versión: ${{ github.event.inputs.version }}"
+
+      - name: Ejecutar Maven verify
+        run: mvn -B verify
