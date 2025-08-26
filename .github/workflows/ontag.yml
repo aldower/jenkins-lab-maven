@@ -1,0 +1,18 @@
+name: Release por tag
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publicar release
+        run: echo "Se detectó un tag de versión, generando release..."
+
+
+# git tag v1.0.0
+# git push origin v1.0.0
+# se puede combinar tags y push en ramas
