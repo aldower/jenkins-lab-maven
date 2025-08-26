@@ -1,0 +1,22 @@
+name: Jobs 101
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Linting..."  # aquí iría: npm run lint / flake8 / etc.
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Tests..."    # aquí iría: npm test / pytest / etc.
+
+  package:
+    runs-on: ubuntu-latest
+    needs: [lint, test]         # espera a que lint y test terminen OK
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Empaquetando artefacto"

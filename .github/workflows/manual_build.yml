@@ -1,0 +1,19 @@
+name: build-manual
+on:
+  workflow_dispatch:
+    inputs:
+      entorno:
+        description: "Elegir entorno"
+        type: choice
+        options: [dev, staging, prod]
+        default: dev
+      publicar:
+        description: "¿Publicar artefactos?"
+        type: boolean
+        default: false
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "entorno=${{ inputs.entorno }} publicar=${{ inputs.publicar }}"

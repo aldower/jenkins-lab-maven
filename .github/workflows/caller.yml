@@ -1,0 +1,8 @@
+name: caller
+
+on: [push]
+jobs:
+  use-reusable:
+    uses: ./.github/workflows/reusable.yml
+    with:
+      node: "20"
