@@ -3,6 +3,6 @@ on: [push]
 
 jobs:
   usa-reutilizable:
-    uses: aldower/dso-pipelines-templates/.github/workflows/reusable-ci.yml@v1
+    uses: aldower/dso-pipelines-templates/.github/workflows/reusable-ci.yml@main
     with:
       mensaje: "Hola desde el repo app"
