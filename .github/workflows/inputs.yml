@@ -1,0 +1,15 @@
+name: ctx-inputs
+on:
+  workflow_dispatch:
+    inputs:
+      entorno:
+        description: "Entorno (dev|staging|prod)"
+        required: true
+        default: "dev"
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Usar input
+        run: echo "Entorno elegido = ${{ inputs.entorno }}"

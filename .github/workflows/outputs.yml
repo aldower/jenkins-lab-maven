@@ -1,0 +1,13 @@
+name: ctx-steps
+on: [push]
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - id: version
+        name: Calcular versión y exponerla como output del step
+        run: echo "VERSION=1.2.3" >> "$GITHUB_OUTPUT"
+
+      - name: Usar output del step anterior
+        run: echo "La versión calculada es ${{ steps.version.outputs.VERSION }}"

@@ -1,0 +1,18 @@
+name: ctx-needs
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artefacto: ${{ steps.mk.outputs.NAME }}
+    steps:
+      - id: mk
+        run: echo "NAME=app.zip" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Usar output del job build
+        run: echo "Desplegando ${{ needs.build.outputs.artefacto }}"

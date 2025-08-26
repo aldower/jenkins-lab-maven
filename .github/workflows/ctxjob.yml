@@ -1,0 +1,8 @@
+name: ctx-job
+on: [push]
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Estado (hasta ahora) = ${{ job.status }}"

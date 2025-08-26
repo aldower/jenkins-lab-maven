@@ -1,0 +1,13 @@
+name: ctx-matrix
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20]
+        os: [ubuntu-latest]
+    steps:
+      - name: Mostrar combinación actual
+        run: echo "Node=${{ matrix.node }} | OS=${{ matrix.os }}"
