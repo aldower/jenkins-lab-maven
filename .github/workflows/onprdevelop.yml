@@ -1,0 +1,13 @@
+name: PR hacia develop
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validación
+        run: echo "Ejecutando tests porque abrieron un PR hacia develop"
