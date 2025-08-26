@@ -1,0 +1,10 @@
+name: Envs
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: prod              # para acceder a vars/secrets del environment
+    steps:
+      - run: echo "ENTORNO=${{ vars.ENTORNO }}"   # org/repo/env: misma sintaxis
+      - run: curl -H "Auth: Bearer ${{ secrets.API_KEY }}" https://api.ejemplo.com
