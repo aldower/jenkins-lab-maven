@@ -1,0 +1,27 @@
+# Usar datos del repositorio y del evento 
+name: github contexts
+
+on: [push]
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mostrar ref y SHA
+        run: echo "ref=${{ github.ref }} sha=${{ github.sha }}"
+
+
+# name: ctx-github-y-runner
+# on: [push]
+
+# jobs:
+#   demo:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Mostrar info del repo y del runner
+#         run: |
+#           echo "repo      = ${{ github.repository }}"
+#           echo "ref       = ${{ github.ref }} (branch/tag: ${{ github.ref_name }})"
+#           echo "sha       = ${{ github.sha }}"
+#           echo "actor     = ${{ github.actor }}"
+#           echo "evento    = ${{ github.event_name }}"
+#           echo "runner OS = ${{ runner.os }} | arch = ${{ runner.arch }}"

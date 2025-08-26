@@ -1,0 +1,14 @@
+#vars (Variables en Settings → Variables → Actions)
+#Define antes en el repo una variable ENTORNO (p. ej. staging).
+
+name: ctx-vars
+
+on: [push]
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Leer vars de Settings
+        run: |
+          echo "ENTORNO (vars) = ${{ vars.ENTORNO }}"

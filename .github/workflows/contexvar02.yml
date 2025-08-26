@@ -1,0 +1,13 @@
+# Llevar a variables de entorno
+name: Github Context
+
+on: [push]
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH: ${{ github.ref_name }}
+      OS: ${{ runner.os }}
+    steps:
+      - run: echo "branch=$BRANCH os=$OS"
