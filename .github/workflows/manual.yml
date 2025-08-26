@@ -1,0 +1,11 @@
+name: Ejecutar manualmente
+
+on:
+  workflow_dispatch:
+
+jobs:
+  manual-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Saludo
+        run: echo "Este workflow fue ejecutado manualmente desde GitHub"
