@@ -10,3 +10,5 @@ jobs:
     steps:
       - name: Backup
         run: echo "Ejecutando tarea programada diaria 🕒"
+
+# https://crontab.guru/#20_2_*_*_*
