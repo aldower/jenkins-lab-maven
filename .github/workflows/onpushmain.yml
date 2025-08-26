@@ -1,0 +1,13 @@
+name: Push en main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Simular deploy
+        run: echo "Desplegando en producción desde main 🚀"
