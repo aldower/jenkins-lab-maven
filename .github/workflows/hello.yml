@@ -1,0 +1,14 @@
+name: Hello World
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+# Acciones
+      - name: Checkout
+        uses: actions/checkout@v5.0.0
+        
+      - name: Imprimir mensaje
+        run: echo "¡Hola mundo desde Cloud Native Academy!"
