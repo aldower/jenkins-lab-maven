@@ -6,9 +6,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-# Acciones
+# Acción checkout
       - name: Checkout
         uses: actions/checkout@v5.0.0
-        
+# Acción Script        
       - name: Imprimir mensaje
         run: echo "¡Hola mundo desde Cloud Native Academy!"
