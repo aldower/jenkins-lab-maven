@@ -4,7 +4,7 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: prod              # para acceder a vars/secrets del environment
+    environment: prod
     steps:
-      - run: echo "ENTORNO=${{ vars.ENTORNO }}"   # org/repo/env: misma sintaxis
+      - run: echo "ENTORNO=${{ vars.ENTORNO }}"
       - run: curl -H "Auth: Bearer ${{ secrets.API_KEY }}" https://api.ejemplo.com
