@@ -1,0 +1,10 @@
+name: Push en cualquier rama
+
+on: push
+
+jobs:
+  onpush:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mensaje
+        run: echo "Se ejecutó porque alguien hizo push en una rama"
