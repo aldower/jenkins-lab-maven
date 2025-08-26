@@ -1,0 +1,11 @@
+name: Env Github
+on: [push]
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Repo  = ${{ github.repository }}"
+          echo "Ref   = ${{ github.ref }}"
+          echo "SHA   = ${{ github.sha }}"
+          echo "Actor = ${{ github.actor }}"
