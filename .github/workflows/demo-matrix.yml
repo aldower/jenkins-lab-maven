@@ -20,7 +20,6 @@ jobs:
       - name: Imprimir repo
         run: echo "Compilando ${{ matrix.repo }}..."
 
-      # 👉 Simular versión aleatoria (reemplaza por tu tarea real)
       - name: Calcular versión (simulada)
         id: ver
         shell: bash
@@ -32,20 +31,20 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Versión calculada para ${{ matrix.repo }}: $VERSION"
 
-      # Guarda "repo,version" (texto simple)
       - name: Guardar par repo,version
         shell: bash
         run: |
           echo "${{ matrix.repo }},${{ steps.ver.outputs.version }}" > "/tmp/${{ matrix.repo }}.csv"
           cat "/tmp/${{ matrix.repo }}.csv"
 
-      # ✅ Sube todos al MISMO artifact
-      - name: Subir artifact "versions"
+      # ⬆️ NOMBRE ÚNICO POR RAMA DE MATRIZ
+      - name: Subir artifact por repo
         uses: actions/upload-artifact@v4
         with:
-          name: versions
+          name: versions-${{ matrix.repo }}
           path: /tmp/${{ matrix.repo }}.csv
           if-no-files-found: error
+          retention-days: 3
 
   collect:
     needs: build
@@ -54,10 +53,12 @@ jobs:
       versions_array: ${{ steps.pack.outputs.versions_array }}
       versions_map: ${{ steps.pack.outputs.versions_map }}
     steps:
-      - name: Descargar artifact "versions"
+      # ⬇️ BAJAR TODOS LOS artifacts QUE MATCHEEN EL PATRÓN
+      - name: Descargar todos los artifacts de versiones
         uses: actions/download-artifact@v4
         with:
-          name: versions
+          pattern: versions-*
+          merge-multiple: true
           path: versions/
 
       - name: Ver archivos recibidos
@@ -67,70 +68,28 @@ jobs:
           echo
           for f in versions/*.csv; do echo "== $f =="; cat "$f"; done
 
-      # Construir JSON SIN jq (solo bash)
-      - name: Empaquetar en JSON (array y mapa)
+      - name: Empaquetar en JSON (sin jq)
         id: pack
         shell: bash
         run: |
           set -euo pipefail
-
-          # Construir array: [{"repo":"x","version":"y"}, ...]
           arr="["
           first=1
           for f in versions/*.csv; do
             IFS=',' read -r repo ver < "$f"
-            # Escapar comillas por seguridad básica
-            repo=${repo//\"/\\\"}
-            ver=${ver//\"/\\\"}
+            repo=${repo//\"/\\\"}; ver=${ver//\"/\\\"}
             item="{\"repo\":\"$repo\",\"version\":\"$ver\"}"
-            if [ $first -eq 1 ]; then
-              arr="$arr$item"
-              first=0
-            else
-              arr="$arr,$item"
-            fi
+            if [ $first -eq 1 ]; then arr="$arr$item"; first=0; else arr="$arr,$item"; fi
           done
           arr="$arr]"
           echo "versions_array=$arr" >> "$GITHUB_OUTPUT"
 
-          # Construir mapa: {"repo":"version", ...}
           map="{"
           first=1
           for f in versions/*.csv; do
             IFS=',' read -r repo ver < "$f"
-            repo=${repo//\"/\\\"}
-            ver=${ver//\"/\\\"}
+            repo=${repo//\"/\\\"}; ver=${ver//\"/\\\"}
             kv="\"$repo\":\"$ver\""
-            if [ $first -eq 1 ]; then
-              map="$map$kv"
-              first=0
-            else
-              map="$map,$kv"
-            fi
+            if [ $first -eq 1 ]; then map="$map$kv"; first=0; else map="$map,$kv"; fi
           done
           map="$map}"
-          echo "versions_map=$map" >> "$GITHUB_OUTPUT"
-
-          echo "JSON array:"
-          echo "$arr"
-          echo
-          echo "JSON map:"
-          echo "$map"
-
-      - name: Imprimir lista conjunta (humana)
-        shell: bash
-        run: |
-          echo "Repo,Version:"
-          for f in versions/*.csv; do cat "$f"; done
-
-  # "Stage" posterior que SOLO imprime usando el JSON agregado
-  use-versions:
-    needs: collect
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        item: ${{ fromJSON(needs.collect.outputs.versions_array) }}
-    steps:
-      - name: Imprimir cada fila repo/version
-        run: |
-          echo "Repo: ${{ matrix.item.repo }}  |  Version: ${{ matrix.item.version }}"
