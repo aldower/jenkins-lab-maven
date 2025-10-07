@@ -1,0 +1,53 @@
+name: demo-matrix-outputs
+
+on:
+  workflow_dispatch:
+    inputs:
+      repositories_json:
+        description: 'JSON de repos: ["repo-frontend","repo-backend"]'
+        required: true
+        default: '["repo-frontend","repo-backend","repo-utils"]'
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: ${{ fromJSON(inputs.repositories_json) }}
+    outputs:
+      # Combina los outputs de todos los runs de la matriz
+      repo_names: ${{ steps.collect.outputs.repo_names }}
+    steps:
+      - name: Imprimir nombre
+        run: echo "Compilando ${{ matrix.repo }}..."
+
+      - name: Guardar repo en salida parcial
+        id: set_repo
+        run: echo "repo=${{ matrix.repo }}" >> "$GITHUB_OUTPUT"
+
+      # Este truco recolecta todas las salidas de la matriz (sin archivos)
+      - name: Agregar al output general
+        id: collect
+        run: |
+          echo "repo_names=$(jq -nc --arg v "${{ matrix.repo }}" '$v')" >> "$GITHUB_OUTPUT"
+
+  collect:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Combinar outputs del job anterior
+        id: combine
+        run: |
+          # `needs.build.outputs.repo_names` contiene un string con las salidas combinadas
+          echo "Repos individuales:"
+          echo '${{ toJSON(needs.build.outputs) }}'
+
+          # Si quisieras combinarlos como JSON (cuando GitHub lo soporte nativo):
+          # echo '${{ toJSON(needs.build.outputs.repo_names) }}' | jq .
+
+      - name: Mostrar lista simple
+        run: |
+          echo "Repos compilados:"
+          echo '${{ toJSON(needs.build.outputs) }}'
