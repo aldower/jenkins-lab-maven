@@ -1,4 +1,4 @@
-name: demo-matrix-outputs
+name: multi-repos-without-jq
 
 on:
   workflow_dispatch:
@@ -16,38 +16,121 @@ jobs:
       fail-fast: false
       matrix:
         repo: ${{ fromJSON(inputs.repositories_json) }}
-    outputs:
-      # Combina los outputs de todos los runs de la matriz
-      repo_names: ${{ steps.collect.outputs.repo_names }}
     steps:
-      - name: Imprimir nombre
+      - name: Imprimir repo
         run: echo "Compilando ${{ matrix.repo }}..."
 
-      - name: Guardar repo en salida parcial
-        id: set_repo
-        run: echo "repo=${{ matrix.repo }}" >> "$GITHUB_OUTPUT"
-
-      # Este truco recolecta todas las salidas de la matriz (sin archivos)
-      - name: Agregar al output general
-        id: collect
+      # 👉 Simular versión aleatoria (reemplaza por tu tarea real)
+      - name: Calcular versión (simulada)
+        id: ver
+        shell: bash
         run: |
-          echo "repo_names=$(jq -nc --arg v "${{ matrix.repo }}" '$v')" >> "$GITHUB_OUTPUT"
+          MAJOR=$((RANDOM % 3 + 1))
+          MINOR=$((RANDOM % 10))
+          PATCH=$((RANDOM % 100))
+          VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Versión calculada para ${{ matrix.repo }}: $VERSION"
+
+      # Guarda "repo,version" (texto simple)
+      - name: Guardar par repo,version
+        shell: bash
+        run: |
+          echo "${{ matrix.repo }},${{ steps.ver.outputs.version }}" > "/tmp/${{ matrix.repo }}.csv"
+          cat "/tmp/${{ matrix.repo }}.csv"
+
+      # ✅ Sube todos al MISMO artifact
+      - name: Subir artifact "versions"
+        uses: actions/upload-artifact@v4
+        with:
+          name: versions
+          path: /tmp/${{ matrix.repo }}.csv
+          if-no-files-found: error
 
   collect:
-    runs-on: ubuntu-latest
     needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      versions_array: ${{ steps.pack.outputs.versions_array }}
+      versions_map: ${{ steps.pack.outputs.versions_map }}
     steps:
-      - name: Combinar outputs del job anterior
-        id: combine
-        run: |
-          # `needs.build.outputs.repo_names` contiene un string con las salidas combinadas
-          echo "Repos individuales:"
-          echo '${{ toJSON(needs.build.outputs) }}'
+      - name: Descargar artifact "versions"
+        uses: actions/download-artifact@v4
+        with:
+          name: versions
+          path: versions/
 
-          # Si quisieras combinarlos como JSON (cuando GitHub lo soporte nativo):
-          # echo '${{ toJSON(needs.build.outputs.repo_names) }}' | jq .
-
-      - name: Mostrar lista simple
+      - name: Ver archivos recibidos
+        shell: bash
         run: |
-          echo "Repos compilados:"
-          echo '${{ toJSON(needs.build.outputs) }}'
+          ls -lah versions/
+          echo
+          for f in versions/*.csv; do echo "== $f =="; cat "$f"; done
+
+      # Construir JSON SIN jq (solo bash)
+      - name: Empaquetar en JSON (array y mapa)
+        id: pack
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Construir array: [{"repo":"x","version":"y"}, ...]
+          arr="["
+          first=1
+          for f in versions/*.csv; do
+            IFS=',' read -r repo ver < "$f"
+            # Escapar comillas por seguridad básica
+            repo=${repo//\"/\\\"}
+            ver=${ver//\"/\\\"}
+            item="{\"repo\":\"$repo\",\"version\":\"$ver\"}"
+            if [ $first -eq 1 ]; then
+              arr="$arr$item"
+              first=0
+            else
+              arr="$arr,$item"
+            fi
+          done
+          arr="$arr]"
+          echo "versions_array=$arr" >> "$GITHUB_OUTPUT"
+
+          # Construir mapa: {"repo":"version", ...}
+          map="{"
+          first=1
+          for f in versions/*.csv; do
+            IFS=',' read -r repo ver < "$f"
+            repo=${repo//\"/\\\"}
+            ver=${ver//\"/\\\"}
+            kv="\"$repo\":\"$ver\""
+            if [ $first -eq 1 ]; then
+              map="$map$kv"
+              first=0
+            else
+              map="$map,$kv"
+            fi
+          done
+          map="$map}"
+          echo "versions_map=$map" >> "$GITHUB_OUTPUT"
+
+          echo "JSON array:"
+          echo "$arr"
+          echo
+          echo "JSON map:"
+          echo "$map"
+
+      - name: Imprimir lista conjunta (humana)
+        shell: bash
+        run: |
+          echo "Repo,Version:"
+          for f in versions/*.csv; do cat "$f"; done
+
+  # "Stage" posterior que SOLO imprime usando el JSON agregado
+  use-versions:
+    needs: collect
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        item: ${{ fromJSON(needs.collect.outputs.versions_array) }}
+    steps:
+      - name: Imprimir cada fila repo/version
+        run: |
+          echo "Repo: ${{ matrix.item.repo }}  |  Version: ${{ matrix.item.version }}"
